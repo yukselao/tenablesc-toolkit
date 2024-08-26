@@ -1,5 +1,9 @@
-## 
 
+
+
+## Introduction:
+
+The purpose of this project is to enable you to programmatically perform certain operations that are executed on the Tenable Security Center interface.
 ## Prepare .env file first:
 
 Create a file named .env. This file contains access information related to the Security Center environment you will be working on. To activate the definitions in the file, you must run the source .env command after each change.
