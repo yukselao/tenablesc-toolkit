@@ -117,12 +117,12 @@ class TenableSC:
         except Exception as err:
             return Result(url=url, data=None, status=None, error=str(traceback.format_exc()))
 
-    def create_web_app_scan(self, name, policy_id, zone, target_url ):
+    def create_web_app_scan(self, name, policy_id, zone, target_url, scan_desc ):
         try:
             url = f"{self.url}/rest/wasScan"
             payload =json.dumps({
   "name": name,
-  "description": "",
+  "description": scan_desc,
   "context": "",
   "status": -1,
   "createdTime": 0,
@@ -157,6 +157,7 @@ class TenableSC:
 })
             url = f"{self.url}/rest/wasScan"
             response = requests.request("POST", url, headers=self.headers, data=payload, verify=False)
+            print(response.text)
             return Result(url=url, data=response.json(), status=response.status_code, error=None)
 
         except Exception as err:
