@@ -18,7 +18,7 @@ logging.getLogger("urllib3").setLevel(logging.WARNING)
 
 def main():
     vuln_manager = VulnMgmt(asset_database=assets.get_database())
-    df = pd.read_csv('web-app-scan-data.csv')
+    df = pd.read_csv('sample-data/web-app-scan-data.csv')
     for index, row in df.iterrows():
         scan_name = str(row["name"])
         scan_url = str(row["url"])
