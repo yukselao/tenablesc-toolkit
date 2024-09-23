@@ -11,22 +11,7 @@ logging.basicConfig(level=logging.DEBUG,
 logging.getLogger("urllib3").setLevel(logging.WARNING)
 from repository.nessus_file_reader import nessus_file_reader
 from repository.smtp_operations import EmailSender
-
-def extract_zip_file(zip_file_path, extract_to):
-
-    try:
-        with zipfile.ZipFile(zip_file_path, 'r') as zip_ref:
-            if zip_ref.testzip() is not None:
-                logging.error("Zip dosyası bozuk.")
-                return False
-            zip_ref.extractall(extract_to)
-        logging.info(f"{zip_file_path} başarıyla çıkarıldı.")
-        return True
-    except zipfile.BadZipFile:
-        logging.error("Geçersiz zip dosyası.")
-        return False
-
-
+from repository.functions import *
 
 
 def main():
