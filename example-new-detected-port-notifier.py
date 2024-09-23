@@ -43,6 +43,7 @@ def main():
     nfr = nessus_file_reader(scan_dir)
     dataset = nfr.get_new_detected_hosts()
 
+
     smtp_server = "1.1.1.1"
     smtp_port = 25
     from_email = "test@test.com.tr"

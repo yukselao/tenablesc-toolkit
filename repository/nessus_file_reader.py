@@ -65,7 +65,8 @@ class nessus_file_reader:
         self.new_scan = get_dataframe(self.new_scan_file)
 
     def get_new_detected_hosts(self):
-
+        logging.info("Old Scan File: " + self.old_scan_file)
+        logging.info("New Scan File: " + self.new_scan_file)
         new_detected_ports_on_new_scan = pd.concat([self.new_scan, self.old_scan]).drop_duplicates(keep=False)
         records = []
         for index, row in new_detected_ports_on_new_scan.iterrows():
