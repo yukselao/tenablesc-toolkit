@@ -1,12 +1,12 @@
 import xml.etree.ElementTree as ET
 import pandas as pd
-import sys
-import logging as logger
+import sys, os
+import logging
 
-logger.basicConfig(level=logger.DEBUG,
+logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s %(levelname)s %(message)s",
                     datefmt="%Y-%m-%dT%H:%M:%S%z")
-logger.getLogger("urllib3").setLevel(logger.WARNING)
+logging.getLogger("urllib3").setLevel(logging.WARNING)
 
 
 def get_dataframe(file_path):
@@ -38,25 +38,43 @@ def get_dataframe(file_path):
                 host_data['port'] = port
                 report_hosts.append(host_data)
 
-    # DataFrame'e çevir
     df = pd.DataFrame(report_hosts)
     return df
 
-old_scan_file = sys.argv[1]
-old_scan = get_dataframe(old_scan_file)
+def list_files_in_directory(directory):
+    try:
+        files = sorted(os.listdir(directory))
+        if not files:
+            logging.warning(f"{directory} içinde dosya bulunamadı.")
+            return None, None
+        old_file = os.path.join(directory, files[0])
+        new_file = os.path.join(directory, files[-1])
+        return old_file, new_file
+    except Exception as e:
+        logging.error(f"Dosyaları sıralarken hata oluştu: {e}")
+        return None, None
 
-new_scan_file = sys.argv[2]
-
-new_scan = get_dataframe(new_scan_file)
 
 
-new_detected_ports_on_new_scan = pd.concat([new_scan, old_scan]).drop_duplicates(keep=False)
+class nessus_file_reader:
 
-#undetected_ports_on_new_scan = pd.concat([old_scan, new_scan]).drop_duplicates(keep=False)
+    def __init__(self, scan_dir):
 
-#logger.debug(new_detected_ports_on_new_scan.dtypes)
-logger.info("Compare scan results: old scan file={}, new scan file={}".format( old_scan_file, new_scan_file))
-logger.info("New Detected Ports and IP addresses on new scan file={}:".format(new_scan_file))
-for index, row in new_detected_ports_on_new_scan.iterrows():
-    logger.info(f"Host: {row['name']}, IP Address: {row['host_ip']}, Port: {row['port']}")
+        self.old_scan_file, self.new_scan_file = list_files_in_directory(scan_dir)
+        self.old_scan = get_dataframe(self.old_scan_file)
+        self.new_scan = get_dataframe(self.new_scan_file)
+
+    def get_new_detected_hosts(self):
+
+        new_detected_ports_on_new_scan = pd.concat([self.new_scan, self.old_scan]).drop_duplicates(keep=False)
+        records = []
+        for index, row in new_detected_ports_on_new_scan.iterrows():
+            dataset = {}
+            dataset["host"] = row["name"]
+            dataset["host_ip"] = row["name"]
+            dataset["port"] = row["port"]
+            records.append(dataset)
+        return records
+
+
 

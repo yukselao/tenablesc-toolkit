@@ -1,3 +1,5 @@
 .env
 .venv/
 .idea/
+nessus-scan-results/
+.DS_Store
