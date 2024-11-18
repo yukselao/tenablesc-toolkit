@@ -1,0 +1,10 @@
+﻿[IpAddress]:Display Label,[IpAddress]:IP AuthoritativeDnsName,[IpAddress]:Computer Name,[IpAddress]:Node Is Virtual,[IpAddress]:Environment,[IpAddress]:Application Group,[IpAddress]:Server Group,[IpAddress]:Asset Description,[IpAddress]:Application Owner.,[IpAddress]:System Owner,[IpAddress]:Computer.Location
+10.10.11.1,,corpxtrcblsrvpoc2,true,POC,TRACEABLE API SECURITY,corpxtrcbl,Traceable API Security POC,Sistem Guvenligi,Acik Kaynak Kod Platformlari,AVM
+10.10.11.2,,corpxocptest1-695gq-master-2,true,TEST,OPENSHIFT CONTAINER PLATFORM,corpxocptest,OpenShift,Orta Katman Yonetimi,Acik Kaynak Kod Platformlari,AVM
+10.10.11.3,,corpxocptest1-695gq-master-1,true,TEST,OPENSHIFT CONTAINER PLATFORM,corpxocptest,Openshift Prod,Orta Katman Yonetimi,Acik Kaynak Kod Platformlari,AVM
+10.10.11.4,,corpxocptest1-695gq-master-0,true,TEST,OPENSHIFT CONTAINER PLATFORM,corpxocptest,OpenShift,Orta Katman Yonetimi,Acik Kaynak Kod Platformlari,AVM
+10.10.11.5,,corpxocptest1-695gq-worker-mlwb2,true,TEST,OPENSHIFT CONTAINER PLATFORM,corpxocptest,OpenShift,Orta Katman Yonetimi,Acik Kaynak Kod Platformlari,AVM
+10.10.11.6,,corpxocptest1-695gq-worker-98q9c,true,TEST,OPENSHIFT CONTAINER PLATFORM,corpxocptest,OpenShift,Orta Katman Yonetimi,Acik Kaynak Kod Platformlari,AVM
+10.10.11.7,,corpxocptest1-695gq-infra-2j88h,true,TEST,OPENSHIFT CONTAINER PLATFORM,corpxocptest,OpenShift,Orta Katman Yonetimi,Acik Kaynak Kod Platformlari,AVM
+10.10.11.8,,corpxocptest1-695gq-infra-dfbpl,false,TEST,OPENSHIFT CONTAINER PLATFORM,corpxocptest,OpenShift,Orta Katman Yonetimi,Acik Kaynak Kod Platformlari,AVM
+10.10.11.12,,corpxocptest1-695gq-infra-dfbpl,false,TEST,OPENSHIFT CONTAINER PLATFORM,corpxocptest,OpenShift,Ust Katman Yonetimi,Acik Kaynak Kod Platformlari,AVM

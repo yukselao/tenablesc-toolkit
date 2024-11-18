@@ -126,7 +126,56 @@ class TenableSC:
             return Result(url=url, data=response.json(), status=response.status_code, error=None)
         except Exception as err:
             return Result(url=url, data=None, status=None, error=str(traceback.format_exc()))
-
+    def update_asset(self, asset_id, ips):
+        try:
+            url = f"{self.url}/rest/asset/{asset_id}"
+            payload = json.dumps({
+                "definedIPs": ips
+            })
+            response = requests.request("PATCH", url, headers=self.headers, data=payload, verify=False)
+            return Result(url=url, data=response.json(), status=response.status_code, error=None)
+        except Exception as err:
+            return Result(url=url, data=None, status=None, error=str(traceback.format_exc()))
+        
+    def get_asset_list(self):
+        try:
+            url = f"{self.url}/rest/asset?filter=excludeAllDefined%2Cusable%2Cusable&fields=canUse%2CcanManage%2Cowner%2Cgroups%2CownerGroup%2Cstatus%2Cname%2Ctype%2Ctemplate%2Cdescription%2CcreatedTime%2CmodifiedTime%2CipCount%2Crepositories%2CtargetGroup%2Ctags%2Ccreator"
+            response = requests.request("GET", url, headers=self.headers, verify=False)
+            return Result(url=url, data=response.json(), status=response.status_code, error=None)
+        except Exception as err:
+            return Result(url=url, data=None, status=None, error=str(traceback.format_exc()))
+        
+    def asset_exists(self, name):
+        try:
+            response = self.get_asset_list()
+            for asset in response.data["response"]["usable"]:
+                if asset.get('name') == name:
+                    return asset.get('id')
+            return None
+        except Exception as err:
+            logging.error(f"Asset kontrolü sırasında hata: {err}")
+            return None
+        
+    def create_asset(self, name, ips):
+        try:
+            url = f"{self.url}/rest/asset"
+            payload = json.dumps({
+    "tags": "",
+    "name": name,
+    "description": "",
+    "context": "",
+    "status": -1,
+    "createdTime": 0,
+    "modifiedTime": 0,
+    "groups": [],
+    "type": "static",
+    "definedIPs": ips
+})
+            response = requests.request("POST", url, headers=self.headers, data=payload, verify=False)
+            return Result(url=url, data=response.json(), status=response.status_code, error=None)
+        except Exception as err:
+            return Result(url=url, data=None, status=None, error=str(traceback.format_exc()))
+        
     def create_web_app_scan(self, name, policy_id, zone, target_url, scan_desc ):
         try:
             url = f"{self.url}/rest/wasScan"

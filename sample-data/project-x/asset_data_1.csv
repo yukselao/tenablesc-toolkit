@@ -1,0 +1,12 @@
+[IpAddress]:Display Label,[IpAddress]:IP AuthoritativeDnsName,[IpAddress]:Computer Name,[IpAddress]:Node Is Virtual,[IpAddress]:Application Group,[IpAddress]:Server Group,[IpAddress]:Asset Description,[IpAddress]:Application Owner.,[IpAddress]:System Owner,[IpAddress]:Computer.Location
+10.1.2.2,,corpxocpprod2-688l6-master-1,true,OPENSHIFT CONTAINER PLATFORM,corpxocpmaster,Openshift Prod,Orta Katman Yonetimi,Acik Kaynak Kod Platformlari,AVM
+10.1.4.2,,corpxocpprod2-688l6-master-2,true,OPENSHIFT CONTAINER PLATFORM,corpxocpmaster,Openshift Prod,Orta Katman Yonetimi,Acik Kaynak Kod Platformlari,AVM
+10.1.6.2,,corpxocpprod2-688l6-worker-0-gq51,true,OPENSHIFT CONTAINER PLATFORM,corpxocpworker,Openshift Prod,Orta Katman Yonetimi,Acik Kaynak Kod Platformlari,AVM
+10.1.8.2,,corpxocpprod2-688l6-worker-0-vh6bc,true,OPENSHIFT CONTAINER PLATFORM,corpxocpworker,Openshift Prod,Sizma Testi,Acik Kaynak Kod Platformlari,AVM
+10.1.10.2,,corpxocpprod2-688l6-worker-0-d8sj5,true,OPENSHIFT CONTAINER PLATFORM,corpxocpworker,Openshift Prod,Orta Katman Yonetimi,Acik Kaynak Kod Platformlari,AVM
+10.1.6.2,,corpxocpdr1-pljth-worker-0-6fv9b,true,OPENSHIFT CONTAINER PLATFORM,corpxocpworker,Openshift DR,Dijital Platformlar,Acik Kaynak Kod Platformlari,Istanbul ODM
+10.1.8.2,,corpxocpdr1-pljth-worker-0-skp25,true,OPENSHIFT CONTAINER PLATFORM,corpxocpworker,Openshift DR,Orta Katman Yonetimi,Acik Kaynak Kod Platformlari,Istanbul ODM
+10.1.10.2,,corpxocpdr1-pljth-worker-0-kqbgn,true,OPENSHIFT CONTAINER PLATFORM,corpxocpworker,Openshift DR,Sizma Testi,Acik Kaynak Kod Platformlari,Istanbul ODM
+10.1.12.2,,corpxocpdr1-pljth-infra-mx9s4,true,OPENSHIFT CONTAINER PLATFORM,corpxocpinfra,Openshift DR,Orta Katman Yonetimi,Acik Kaynak Kod Platformlari,Istanbul ODM
+10.1.14.2,,corpxocpdr1-pljth-infra-kt8wv,true,OPENSHIFT CONTAINER PLATFORM,corpxocpinfra,Openshift DR,Orta Katman Yonetimi,Acik Kaynak Kod Platformlari,Istanbul ODM
+10.1.16.2,,corpxocpdr1-pljth-infra-vgmkb,true,OPENSHIFT CONTAINER PLATFORM,corpxocpinfra,Openshift DR,Orta Katman Yonetimi,Acik Kaynak Kod Platformlari,Istanbul ODM

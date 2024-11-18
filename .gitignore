@@ -3,3 +3,4 @@
 .idea/
 nessus-scan-results/
 .DS_Store
+**/__pycache__/
