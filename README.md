@@ -12,6 +12,8 @@ Create a file named .env. This file contains access information related to the S
 export TENABLE_SC_URL="<TENABLE_SC_URL>"
 export TENABLE_SC_ACCESS_KEY="<TENABLE_SC_ACCESS_KEY>"
 export TENABLE_SC_SECRET_KEY="<TENABLE_SC_SECRET_KEY>"
+
+export ASSET_PREFIX="COMPANY - "
 ```
 
 
