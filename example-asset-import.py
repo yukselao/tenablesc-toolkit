@@ -43,12 +43,12 @@ def main():
             continue
             
         is_virtual = row["[IpAddress]:Node Is Virtual"]
-        deployment_type = row["[IpAddress]:Environment"]
-        application_group = row["[IpAddress]:Application Group"]
-        server_group = row["[IpAddress]:Server Group"]
-        application_owner = row["[IpAddress]:Application Owner."]
-        system_owner = row["[IpAddress]:System Owner"]
-        computer_location = row["[IpAddress]:Computer.Location"]
+        deployment_type = row["[IpAddress]:Environment"] + " (Environment)"
+        application_group = row["[IpAddress]:Application Group"] + " (Application Group)"
+        server_group = row["[IpAddress]:Server Group"] + " (Server Group)"
+        application_owner = row["[IpAddress]:Application Owner."]+ " (Application Owner)"
+        system_owner = row["[IpAddress]:System Owner"] + " (System Owner)"
+        computer_location = row["[IpAddress]:Computer.Location"] + " (Location)"
         #logging.info(f"ipaddr: {ipaddr}, is_virtual: {is_virtual}, deployment_type: {deployment_type}, application_group: {application_group}, server_group: {server_group}, application_owner: {application_owner}, system_owner: {system_owner}, computer_location: {computer_location}")
 
         if 'Virtual' not in asset_keys:
@@ -64,9 +64,11 @@ def main():
             asset_keys[server_group] = []
             
         if application_owner not in asset_keys:
+            application_owner = application_owner 
             asset_keys[application_owner] = []
             
         if system_owner not in asset_keys:
+            system_owner = system_owner
             asset_keys[system_owner] = []
             
         if computer_location not in asset_keys:
@@ -85,9 +87,11 @@ def main():
             asset_keys[server_group].append(ipaddr)
         
         if application_owner not in asset_keys[application_owner]:
+            application_owner = application_owner
             asset_keys[application_owner].append(ipaddr)
             
         if system_owner not in asset_keys[system_owner]:
+            system_owner = system_owner
             asset_keys[system_owner].append(ipaddr)
         
         if computer_location not in asset_keys[computer_location]:
@@ -98,6 +102,7 @@ def main():
     for asset_name in asset_keys:
         logging.info(f"{asset_name}: {asset_keys[asset_name]}")
         asset_id = vuln_manager.asset_exists(ASSET_PREFIX + asset_name)
+        logging.info(f"Check if asset exists: {ASSET_PREFIX}{asset_name} -> asset_id: {asset_id}")
         if asset_id:
             logging.info(f"Asset already exists: {asset_name}")
             response = vuln_manager.update_asset(asset_id, ','.join(asset_keys[asset_name]))

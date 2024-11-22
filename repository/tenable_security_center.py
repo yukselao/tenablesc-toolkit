@@ -143,6 +143,7 @@ class TenableSC:
             response = requests.request("GET", url, headers=self.headers, verify=False)
             return Result(url=url, data=response.json(), status=response.status_code, error=None)
         except Exception as err:
+            logging.error(f"get_asset_list: {traceback.format_exc()}")
             return Result(url=url, data=None, status=None, error=str(traceback.format_exc()))
         
     def asset_exists(self, name):
@@ -153,7 +154,7 @@ class TenableSC:
                     return asset.get('id')
             return None
         except Exception as err:
-            logging.error(f"Asset kontrolü sırasında hata: {err}")
+            logging.error(f"Asset kontrolü sırasında hata: {traceback.format_exc()}")
             return None
         
     def create_asset(self, name, ips):
