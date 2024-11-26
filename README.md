@@ -15,7 +15,9 @@ export TENABLE_SC_SECRET_KEY="<TENABLE_SC_SECRET_KEY>"
 
 export ASSET_PREFIX="COMPANY - "
 
-
+##
+#  The password defined below will be used as the default password when creating a user via the API. In the future, when the user's authentication method is set to LDAP, the user will be able to log in to the system using their Active Directory password. Initially, the default password should be used to access each user individually, allowing for default dashboard customization and other settings. Afterward, the user's authentication type should be set to LDAP.
+##
 export USER_DEFAULT_PASSWORD="Very_s3cure_P@ssw0rd_%o_o%"
 
 ###
