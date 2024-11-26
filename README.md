@@ -7,6 +7,7 @@ The purpose of this project is to enable you to programmatically perform certain
 ## Prepare .env file first:
 
 Create a file named .env. This file contains access information related to the Security Center environment you will be working on. To activate the definitions in the file, you must run the source .env command after each change.
+
 ### Sample ".env" file content: 
 ```
 export TENABLE_SC_URL="<TENABLE_SC_URL>"
