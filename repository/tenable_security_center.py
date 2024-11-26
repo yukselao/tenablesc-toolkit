@@ -9,7 +9,7 @@
 
 
 
-import logging, json, sys
+import logging, json, sys, os
 import pandas as pd
 logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s %(levelname)s %(message)s",
@@ -26,6 +26,18 @@ logging.basicConfig(level=logging.DEBUG,
                     datefmt="%Y-%m-%dT%H:%M:%S%z")
 logging.getLogger("urllib3").setLevel(logging.WARNING)
 
+def convert_json_nulls_to_none(obj):
+    if isinstance(obj, dict):
+        return {key: convert_json_nulls_to_none(value) for key, value in obj.items()}
+    elif isinstance(obj, list):
+        return [convert_json_nulls_to_none(item) for item in obj]
+    elif obj == "null":
+        return None
+    elif obj == "false":
+        return False
+    elif obj == "true":
+        return True
+    return obj
 
 class Result:
     def __init__(self, url=None, data=None, status=None, error=None):
@@ -156,6 +168,191 @@ class TenableSC:
         except Exception as err:
             logging.error(f"Asset kontrolü sırasında hata: {traceback.format_exc()}")
             return None
+    def get_repository_list(self):
+        try:
+            url = f"{self.url}/rest/repository?fields="
+            response = requests.request("GET", url, headers=self.headers, verify=False)
+            return Result(url=url, data=response.json(), status=response.status_code, error=None)
+        except Exception as err:
+            logging.error(f"get_repository_list: {traceback.format_exc()}")
+            return Result(url=url, data=None, status=None, error=str(traceback.format_exc()))
+    def get_group_list(self):
+        try:
+            url = f"{self.url}/rest/group?fields=name%2CuserCount%2CmodifiedTime"
+            response = requests.request("GET", url, headers=self.headers, verify=False)
+            return Result(url=url, data=response.json(), status=response.status_code, error=None)
+        except Exception as err:
+            logging.error(f"get_group_list: {traceback.format_exc()}")
+            return Result(url=url, data=None, status=None, error=str(traceback.format_exc()))
+        
+    def get_group_id(self, group_name):
+        """
+        Verilen grup adına ait ID'yi döndürür.
+        
+        Args:
+            group_name (str): Aranacak grup adı
+                
+        Returns:
+            Result: ID bilgisini içeren Result objesi
+        """
+        try:
+            response = self.get_group_list()
+            if response.status == 200 and response.data:
+                groups = response.data['response']
+                
+                # Grup adına göre arama yap
+                for group in groups:
+                    if group["name"] == group_name:
+                        return Result(data=group["id"], status=200, error=None)
+                
+                # Grup bulunamazsa
+                return Result(data=None, status=404, error=f"Group '{group_name}' not found")
+                
+        except Exception as err:
+            return Result(data=None, status=None, error=str(traceback.format_exc()))
+        
+    def update_group(self, group_id, name):
+        repositories_json = os.getenv('TENABLE_REPOSITORIES', '[]')
+
+        try:
+            url = f"{self.url}/rest/group/{group_id}"
+            repositories = json.loads(repositories_json)
+            repositories = convert_json_nulls_to_none(repositories)
+            payload = json.dumps({
+                "name": name,
+                "definingAssets": [
+                    {
+                        "id": "0"
+                    }
+                ],
+                "repositories": repositories
+            })
+            response = requests.request("PATCH", url, headers=self.headers, data=payload, verify=False)
+            return Result(url=url, data=response.json(), status=response.status_code, error=None)
+        except Exception as err:
+            return Result(url=url, data=None, status=None, error=str(traceback.format_exc()))
+        
+    def create_group(self, name):
+        try:
+            url = f"{self.url}/rest/group"
+            repositories_json = os.getenv('GROUP_DEFAULT_REPOSITORY_LIST', '[]')
+            repositories = json.loads(repositories_json)
+            #logging.warning(repositories)
+            repositories = convert_json_nulls_to_none(repositories)
+            payload = json.dumps({
+    "name": name,
+    "description": "",
+    "context": "",
+    "status": -1,
+    "createdTime": 0,
+    "modifiedTime": 0,
+    "lces": [],
+    "repositories": repositories,
+    "definingAssets": [
+        {
+            "id": 0
+        }
+    ],
+    "users": [],
+    "createDefaultObjects": "false",
+    "assets": [],
+    "arcs": [],
+    "auditFiles": [],
+    "credentials": [],
+    "dashboardTabs": [],
+    "policies": [],
+    "queries": []
+            })
+            response = requests.request("POST", url, headers=self.headers, data=payload, verify=False)
+            return Result(url=url, data=response.json(), status=response.status_code, error=None)
+        except Exception as err:
+            return Result(url=url, data=None, status=None, error=str(traceback.format_exc()))
+        
+    def create_user(self, dataset):
+        try:
+            url = f"{self.url}/rest/user"
+            payload = json.dumps({
+    "name": "",
+    "description": "",
+    "context": "",
+    "status": -1,
+    "createdTime": 0,
+    "modifiedTime": 0,
+    "firstname": dataset["firstname"],
+    "lastname": dataset["lastname"],
+    "username": dataset["username"],
+    "title": "",
+    "address": "",
+    "city": "",
+    "state": "",
+    "country": "",
+    "phone": "",
+    "email": dataset["email"],
+    "fax": "",
+    "searchString": "",
+    "roleID": 4,
+    "groupID": dataset["group_id"],
+    "failedLogins": 0,
+    "lastLogin": 0,
+    "lastLoginIP": "",
+    "locked": "false",
+    "lastFailedLogin": 0,
+    "failedLoginAttempts": 0,
+    "passwordExpires": "false",
+    "passwordExpiration": 90,
+    "passwordExpirationOverride": "false",
+    "responsibleAsset": "-1",
+    "responsibleAssetID": "-1",
+    "emailInfo": False,
+    "emailPassword": False,
+    "emailNotice": "none",
+    "preferences": [
+        {
+            "name": "timezone",
+            "tag": "system",
+            "value": "Europe/Istanbul"
+        },
+        {
+            "name": "cacheEnabled",
+            "tag": "system",
+            "value": "false"
+        },
+        {
+            "name": "darkMode",
+            "tag": "system",
+            "value": "false"
+        },
+        {
+            "name": "srDefaultTimeframe",
+            "tag": "system",
+            "value": "7d"
+        }
+    ],
+    "mustChangePassword": "false",
+    "passwordHasExpired": "false",
+    "linkedOrgIds": [],
+    "linkedUserRole": {},
+    "password": os.getenv('USER_DEFAULT_PASSWORD'),
+    "currentPassword": "",
+    "authType": "tns",
+    "managedObjectsGroups": [
+        {
+            "id": dataset["group_id"]
+        }
+    ],
+    "managedUsersGroups": [
+        {
+            "id": dataset["group_id"]
+        }
+    ]
+})
+            response = requests.request("POST", url, headers=self.headers, data=payload, verify=False)
+            if response.status_code == 200:
+                return Result(url=url, data=response.json(), status=response.status_code, error=None)
+            else:
+                return Result(url=url, data=response.json(), status=response.status_code, error={"request": payload, "response": response.text})
+        except Exception as err:
+            return Result(url=url, data=None, status=None, error=str(traceback.format_exc()))   
         
     def create_asset(self, name, ips):
         try:
