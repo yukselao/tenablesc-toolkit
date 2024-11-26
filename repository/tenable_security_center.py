@@ -268,6 +268,24 @@ class TenableSC:
         except Exception as err:
             return Result(url=url, data=None, status=None, error=str(traceback.format_exc()))
         
+    def get_user_list(self):
+        try:
+            url = f"{self.url}/rest/user?fields=username%2Cfirstname%2Clastname%2Cemail%2CgroupID%2CroleID%2Cstatus%2CcreatedTime%2CmodifiedTime"
+            response = requests.request("GET", url, headers=self.headers, verify=False)
+            return Result(url=url, data=response.json(), status=response.status_code, error=None)
+        except Exception as err:
+            return Result(url=url, data=None, status=None, error=str(traceback.format_exc()))
+        
+    def user_exists(self, username):
+        try:
+            response = self.get_user_list()
+            for user in response.data["response"]:
+                if user.get('username') == username:
+                    return  Result(url='user_exists', data=user.get('id'), status=1, error='User already exists')
+            return  Result(url='user_exists', data=username, status=2, error='User not found')
+        except Exception as err:
+            return Result(url='user_exists', data=None, status=3, error=str(traceback.format_exc()))
+        
     def create_user(self, dataset):
         try:
             url = f"{self.url}/rest/user"

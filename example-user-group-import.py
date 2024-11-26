@@ -25,7 +25,6 @@ ASSET_PREFIX = os.getenv('ASSET_PREFIX', 'default_prefix_')
 def main():
     vuln_manager = VulnMgmt()
     asset_keys = {}
-
     # Pandas ile oku
     df = pd.read_csv('sample-data/project-x/dummy_adm_users.csv', encoding='utf-8')
     groups = {}
@@ -50,18 +49,11 @@ def main():
             groups[group] = []
         groups[group].append(userdata)
 
-
-
-    # Pretty print kullanarak yazdır
-    import pprint
-    pp = pprint.PrettyPrinter(indent=4, width=120)
-    pp.pprint(groups)
-    
     
     sc_group_list = vuln_manager.get_group_list().dataframe
     sc_group_names = [group["name"] for group in sc_group_list]
 
-    print(groups)
+    #print(groups)
     
     for key in groups:
         if key in sc_group_names:
@@ -74,13 +66,18 @@ def main():
         for user_dataset in groups[key]:
             group_id = vuln_manager.get_group_id(key).dataframe
             user_dataset["group_id"] = group_id
-            result = vuln_manager.create_user(user_dataset)
-            print(result.dataframe)
-            print(result.status)
-            print(result.error)
-            print(user_dataset)
+            user_exists = vuln_manager.user_exists(user_dataset["username"])
+            if user_exists.status == 2:
+                result = vuln_manager.create_user(user_dataset)
+                if result.status == 200:
+                    logging.info(f"{user_dataset['username']} created successfully")
+                else:
+                    logging.error(result.error)
+
+            else:
+                logging.info(f"{user_dataset['username']} already exists, skip user creation")
         
-    print(sc_group_list)
+    #print(sc_group_list)
 
 if __name__ == "__main__":
     main()
