@@ -1,0 +1,143 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+##
+# Author: Ali Okan Yuksel
+# Mail: ayuksel@tenable.com
+# Tool: nessusctl - Tenable Security Center scanner yonetim CLI
+##
+
+import argparse
+import json
+import logging
+import sys
+import urllib3
+
+from service.vulnerability_management import VulnMgmt
+
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+logging.basicConfig(level=logging.INFO,
+                    format="%(asctime)s %(levelname)s %(message)s",
+                    datefmt="%Y-%m-%dT%H:%M:%S%z")
+logging.getLogger("urllib3").setLevel(logging.WARNING)
+
+
+def cmd_add(args):
+    vuln_manager = VulnMgmt()
+
+    existing = vuln_manager.scanner_exists(args.name)
+    if existing.status == 1:
+        logging.warning(f"Scanner '{args.name}' zaten mevcut (id={existing.dataframe}), olusturma atlandi.")
+        return 0
+
+    if args.auth_type == "password":
+        if not args.username or not args.password:
+            logging.error("password auth icin --username ve --password zorunlu.")
+            return 2
+    elif args.auth_type == "key":
+        if not args.access_key or not args.secret_key:
+            logging.error("key auth icin --access-key ve --secret-key zorunlu.")
+            return 2
+
+    dataset = {
+        "name": args.name,
+        "description": args.description or "",
+        "ip": args.ip,
+        "port": str(args.port),
+        "auth_type": args.auth_type,
+        "username": args.username or "",
+        "password": args.password or "",
+        "access_key": args.access_key or "",
+        "secret_key": args.secret_key or "",
+        "verify_host": "true" if args.verify_host else "false",
+        "use_proxy": "true" if args.use_proxy else "false",
+        "enabled": "false" if args.disabled else "true",
+        "agent_capable": "true" if args.agent_capable else "false",
+        "was_capable": "true" if args.was_capable else "false",
+        "zones": [],
+    }
+
+    result = vuln_manager.create_scanner(dataset)
+    if result.status == 200:
+        scanner_id = None
+        try:
+            scanner_id = result.dataframe.get("response", {}).get("id")
+        except AttributeError:
+            pass
+        logging.info(f"Scanner olusturuldu: name='{args.name}' id={scanner_id}")
+        return 0
+
+    logging.error(f"Scanner olusturulamadi (status={result.status}): {result.error}")
+    return 1
+
+
+def cmd_list(args):
+    vuln_manager = VulnMgmt()
+    result = vuln_manager.get_scanner_list()
+    if result.status != 200:
+        logging.error(f"Scanner listesi alinamadi (status={result.status}): {result.error}")
+        return 1
+
+    scanners = result.dataframe.get("response", []) if result.dataframe else []
+    if isinstance(scanners, dict):
+        scanners = scanners.get("manageable", []) + scanners.get("usable", [])
+
+    if args.json:
+        print(json.dumps(scanners, indent=2, ensure_ascii=False))
+        return 0
+
+    if not scanners:
+        print("Hicbir scanner bulunamadi.")
+        return 0
+
+    print(f"{'ID':<6} {'NAME':<30} {'IP':<20} {'PORT':<6} {'STATUS':<8} {'ENABLED':<8}")
+    print("-" * 80)
+    for s in scanners:
+        print(f"{str(s.get('id', '')):<6} {str(s.get('name', ''))[:30]:<30} "
+              f"{str(s.get('ip', ''))[:20]:<20} {str(s.get('port', '')):<6} "
+              f"{str(s.get('status', '')):<8} {str(s.get('enabled', '')):<8}")
+    return 0
+
+
+def build_parser():
+    parser = argparse.ArgumentParser(
+        prog="nessusctl",
+        description="Tenable Security Center scanner yonetim aracidir. "
+                    "Bagli SC ortamina (~/.env'deki TENABLE_SC_URL) scanner ekler ve listeler.",
+    )
+    sub = parser.add_subparsers(dest="command", required=True)
+
+    p_add = sub.add_parser("add", help="Yeni scanner ekle")
+    p_add.add_argument("--name", required=True, help="Scanner adi")
+    p_add.add_argument("--ip", required=True, help="Scanner host/IP")
+    p_add.add_argument("--port", default="8834", help="Scanner port (default: 8834)")
+    p_add.add_argument("--description", default="", help="Aciklama")
+    p_add.add_argument("--auth-type", choices=["password", "key"], default="password",
+                       help="Kimlik dogrulama tipi (default: password)")
+    p_add.add_argument("--username", default="", help="Username (password auth icin)")
+    p_add.add_argument("--password", default="", help="Password (password auth icin)")
+    p_add.add_argument("--access-key", default="", help="Access key (key auth icin)")
+    p_add.add_argument("--secret-key", default="", help="Secret key (key auth icin)")
+    p_add.add_argument("--verify-host", action="store_true", help="Host sertifika dogrulamasi acik")
+    p_add.add_argument("--use-proxy", action="store_true", help="Proxy kullan")
+    p_add.add_argument("--disabled", action="store_true", help="Scanner'i devre disi olarak ekle")
+    p_add.add_argument("--agent-capable", action="store_true", help="Agent capable olarak isaretle")
+    p_add.add_argument("--was-capable", action="store_true", help="WAS capable olarak isaretle")
+    p_add.set_defaults(func=cmd_add)
+
+    p_list = sub.add_parser("list", help="Mevcut scanner'lari listele")
+    p_list.add_argument("--json", action="store_true", help="JSON formatinda ciktila")
+    p_list.set_defaults(func=cmd_list)
+
+    return parser
+
+
+def main():
+    parser = build_parser()
+    args = parser.parse_args()
+    sys.exit(args.func(args))
+
+
+if __name__ == "__main__":
+    main()

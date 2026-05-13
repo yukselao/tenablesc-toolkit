@@ -48,5 +48,41 @@ pip3 install -r requirements.txt
 ./app.py
 ```
 
+## nessusctl — Scanner Management CLI
+
+`nessusctl` is a small command-line wrapper around the Tenable Security Center `/rest/scanner` endpoint. It uses the credentials defined in `.env` (`TENABLE_SC_URL`, `TENABLE_SC_ACCESS_KEY`, `TENABLE_SC_SECRET_KEY`).
+
+### Add a scanner (password auth)
+
+```bash
+./nessusctl add \
+    --name "scannername" \
+    --description "scannerdesc" \
+    --ip scannerhost \
+    --port 8834 \
+    --username scannerusername \
+    --password scannerpassword
+```
+
+### Add a scanner (API key auth)
+
+```bash
+./nessusctl add \
+    --name "scannername" \
+    --ip scannerhost \
+    --auth-type key \
+    --access-key <ACCESS_KEY> \
+    --secret-key <SECRET_KEY>
+```
+
+### List scanners
+
+```bash
+./nessusctl list
+./nessusctl list --json
+```
+
+If a scanner with the same name already exists, `add` is a no-op (idempotent).
+
 ## Support
 This project is provided as open-source for your use. You cannot receive official support from Tenable regarding this project. For any questions or bug reports, you can open an issue on GitHub.

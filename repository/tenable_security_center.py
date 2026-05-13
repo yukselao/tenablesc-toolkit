@@ -437,6 +437,65 @@ class TenableSC:
         except Exception as err:
             return Result(url=url, data=None, status=None, error=str(traceback.format_exc()))
 
+    def get_scanner_list(self):
+        try:
+            url = f"{self.url}/rest/scanner?fields=id%2Cname%2Cdescription%2Cstatus%2Cip%2Cport%2CauthType%2Cenabled%2CagentCapable%2CwasCapable%2Cversion%2CcreatedTime%2CmodifiedTime"
+            response = requests.request("GET", url, headers=self.headers, verify=False)
+            return Result(url=url, data=response.json(), status=response.status_code, error=None)
+        except Exception as err:
+            return Result(url=url, data=None, status=None, error=str(traceback.format_exc()))
+
+    def scanner_exists(self, name):
+        try:
+            response = self.get_scanner_list()
+            if response.status == 200 and response.data:
+                scanners = response.data.get("response", [])
+                if isinstance(scanners, dict):
+                    scanners = scanners.get("manageable", []) + scanners.get("usable", [])
+                for scanner in scanners:
+                    if scanner.get("name") == name:
+                        return Result(url="scanner_exists", data=scanner.get("id"), status=1, error="Scanner already exists")
+                return Result(url="scanner_exists", data=name, status=2, error="Scanner not found")
+            return Result(url="scanner_exists", data=None, status=response.status, error=response.error)
+        except Exception as err:
+            return Result(url="scanner_exists", data=None, status=3, error=str(traceback.format_exc()))
+
+    def create_scanner(self, name, ip, port="8834", description="", auth_type="password",
+                       username="", password="", access_key="", secret_key="",
+                       verify_host="false", use_proxy="false", enabled="true",
+                       agent_capable="false", was_capable="false", zones=None):
+        try:
+            url = f"{self.url}/rest/scanner"
+            payload = json.dumps({
+                "name": name,
+                "description": description,
+                "context": "",
+                "status": -1,
+                "createdTime": 0,
+                "modifiedTime": 0,
+                "authType": auth_type,
+                "username": username,
+                "password": password,
+                "ip": ip,
+                "port": str(port),
+                "verifyHost": verify_host,
+                "useProxy": use_proxy,
+                "enabled": enabled,
+                "zones": zones if zones is not None else [],
+                "agentCapable": agent_capable,
+                "wasCapable": was_capable,
+                "nessusManagerOrgs": [],
+                "accessKey": access_key,
+                "secretKey": secret_key
+            })
+            response = requests.request("POST", url, headers=self.headers, data=payload, verify=False)
+            if response.status_code == 200:
+                return Result(url=url, data=response.json(), status=response.status_code, error=None)
+            return Result(url=url, data=response.json() if response.text else None,
+                          status=response.status_code, error={"request": payload, "response": response.text})
+        except Exception as err:
+            return Result(url=url, data=None, status=None, error=str(traceback.format_exc()))
+
     def get_scan_results(self):
         try:
             payload = json.dumps({
