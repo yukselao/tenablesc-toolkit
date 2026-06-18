@@ -160,9 +160,17 @@ body {
 /* Export bar */
 .export-bar { display: flex; gap: .5rem; justify-content: flex-end; margin-bottom: 1rem; }
 
-/* Scan result picker */
-.scan-picker { max-height: 420px; overflow-y: auto; border: 1px solid var(--border); border-radius: 10px; }
+/* Scan result picker — no inner scroll / no pagination: list everything */
+.scan-picker { border: 1px solid var(--border); border-radius: 10px; }
 .scan-picker thead th { position: sticky; top: 0; background: #11161d; z-index: 1; }
+
+/* Search box */
+.search-wrap { position: relative; max-width: 360px; flex: 1; }
+.search-wrap .bi {
+    position: absolute; left: .7rem; top: 50%; transform: translateY(-50%);
+    color: #6e7681; pointer-events: none;
+}
+.search-wrap input { padding-left: 2rem; }
 
 @media (max-width: 992px) {
     .summary-grid { grid-template-columns: repeat(2, 1fr); }

@@ -101,10 +101,16 @@ render_sidebar('results', $history);
             <section class="card upload-card no-print">
                 <form method="post" class="card-body">
                     <input type="hidden" name="action" value="analyze">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <div>
-                            <strong><?= count($scanResults) ?></strong> scan result bulundu.
-                            <span class="text-muted small ms-2">First ve Last için birer satır seçin.</span>
+                    <div class="d-flex justify-content-between align-items-center mb-3 gap-3 flex-wrap">
+                        <div class="d-flex align-items-center gap-3 flex-grow-1">
+                            <div class="search-wrap">
+                                <i class="bi bi-search"></i>
+                                <input type="text" id="scanSearch" class="form-control"
+                                       placeholder="Ara: ID, isim, status, repository, tarih…" autocomplete="off">
+                            </div>
+                            <span class="text-muted small text-nowrap">
+                                <strong id="scanShown"><?= count($scanResults) ?></strong>/<?= count($scanResults) ?> scan result
+                            </span>
                         </div>
                         <button type="submit" class="btn btn-primary"><i class="bi bi-cpu"></i> Analyze</button>
                     </div>
@@ -124,8 +130,12 @@ render_sidebar('results', $history);
                             <?php else: foreach ($scanResults as $s): $id = (int) $s['id'];
                                 $canUse = ($s['canUse'] ?? 'true') !== 'false';
                                 $dis = $canUse ? '' : 'disabled';
+                                $search = strtolower(trim(implode(' ', [
+                                    '#' . $id, $s['name'] ?? '', $s['status'] ?? '',
+                                    $s['repository']['name'] ?? '', fmt_time($s['finishTime'] ?? 0),
+                                ])));
                             ?>
-                                <tr class="<?= $canUse ? '' : 'opacity-50' ?>">
+                                <tr class="scan-row <?= $canUse ? '' : 'opacity-50' ?>" data-search="<?= h($search) ?>">
                                     <td class="text-center"><input class="form-check-input" type="radio" name="first_id" value="<?= $id ?>" <?= $dis ?>></td>
                                     <td class="text-center"><input class="form-check-input" type="radio" name="last_id" value="<?= $id ?>" <?= $dis ?>></td>
                                     <td class="text-muted">#<?= $id ?></td>
@@ -141,11 +151,35 @@ render_sidebar('results', $history);
                                     <td class="small"><?= h($s['repository']['name'] ?? '—') ?></td>
                                 </tr>
                             <?php endforeach; endif; ?>
+                                <tr id="scanNoMatch" style="display:none;">
+                                    <td colspan="8" class="empty-row">Aramayla eşleşen scan result yok.</td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>
                 </form>
             </section>
+
+            <script>
+            (function () {
+                var input = document.getElementById('scanSearch');
+                if (!input) return;
+                var rows = Array.prototype.slice.call(document.querySelectorAll('tr.scan-row'));
+                var shown = document.getElementById('scanShown');
+                var noMatch = document.getElementById('scanNoMatch');
+                input.addEventListener('input', function () {
+                    var q = input.value.trim().toLowerCase();
+                    var n = 0;
+                    rows.forEach(function (r) {
+                        var hit = q === '' || (r.getAttribute('data-search') || '').indexOf(q) !== -1;
+                        r.style.display = hit ? '' : 'none';
+                        if (hit) n++;
+                    });
+                    if (shown) shown.textContent = n;
+                    if (noMatch) noMatch.style.display = n === 0 ? '' : 'none';
+                });
+            })();
+            </script>
 
             <?php if ($result): ?>
                 <?php render_export_bar($analysisId); ?>
