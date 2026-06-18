@@ -42,6 +42,11 @@ body {
 .brand-sub { font-size: .75rem; color: #8b949e; }
 
 .sidebar .nav { margin-top: .75rem; }
+.nav-section-title {
+    font-size: .68rem; text-transform: uppercase; letter-spacing: .09em;
+    color: #6e7681; font-weight: 700; padding: .25rem .8rem; margin-top: .85rem;
+}
+.nav-section-title:first-child { margin-top: 0; }
 .sidebar .nav-link {
     color: #c9d1d9;
     border-radius: 8px;
@@ -160,17 +165,58 @@ body {
 /* Export bar */
 .export-bar { display: flex; gap: .5rem; justify-content: flex-end; margin-bottom: 1rem; }
 
-/* Scan result picker — no inner scroll / no pagination: list everything */
-.scan-picker { border: 1px solid var(--border); border-radius: 10px; }
-.scan-picker thead th { position: sticky; top: 0; background: #11161d; z-index: 1; }
+/* Cache / fetch bar */
+.cache-bar { margin-bottom: 1.25rem; }
+.cache-info { display: flex; align-items: center; gap: .5rem; font-size: .92rem; color: #c9d1d9; }
+.cache-info .bi { font-size: 1.2rem; }
 
 /* Search box */
+.search-form { display: flex; align-items: center; gap: .6rem; margin-bottom: 1.25rem; }
 .search-wrap { position: relative; max-width: 360px; flex: 1; }
 .search-wrap .bi {
     position: absolute; left: .7rem; top: 50%; transform: translateY(-50%);
     color: #6e7681; pointer-events: none;
 }
 .search-wrap input { padding-left: 2rem; }
+
+/* Grouped scan list */
+.group-list { display: flex; flex-direction: column; gap: .6rem; margin-bottom: 1.25rem; }
+.group-card {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 12px; overflow: hidden;
+}
+.group-card:hover { border-color: #3b4754; }
+.group-row {
+    display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 1.25rem;
+    padding: .85rem 1.1rem;
+}
+.group-action { display: flex; align-items: center; gap: .5rem; }
+
+/* Expandable manual First/Last picker */
+.group-panel { display: none; border-top: 1px solid var(--border); background: #11161d; }
+.group-panel.open { display: block; }
+.group-scans { max-height: 320px; overflow-y: auto; }
+.group-scans thead th { position: sticky; top: 0; background: #11161d; z-index: 1; font-size: .72rem; }
+.pick-note { padding: .6rem 1.1rem; font-size: .78rem; color: #d29922; border-bottom: 1px solid var(--border); }
+.pick-actions { padding: .75rem 1.1rem; display: flex; justify-content: flex-end; }
+.group-name { font-weight: 600; font-size: .98rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.group-sub { display: flex; align-items: center; gap: .75rem; margin-top: .3rem; }
+.group-sub .repo { font-size: .78rem; color: #8b949e; }
+.group-range { display: flex; align-items: center; gap: .9rem; }
+.group-range .ep { display: flex; flex-direction: column; line-height: 1.15; text-align: center; }
+.ep-label { font-size: .65rem; text-transform: uppercase; letter-spacing: .06em; color: #6e7681; }
+.ep-date { font-size: .82rem; color: #c9d1d9; font-variant-numeric: tabular-nums; }
+.ep-id { font-size: .72rem; color: #6e7681; font-family: ui-monospace, monospace; }
+.ep-arrow { color: var(--accent); font-size: 1.1rem; }
+
+/* Pagination */
+.pager { display: flex; align-items: center; justify-content: center; gap: 1rem; margin: 1rem 0 .5rem; }
+.pager-info { font-size: .88rem; color: #adbac7; }
+.pager .disabled { pointer-events: none; opacity: .4; }
+
+@media (max-width: 768px) {
+    .group-card { grid-template-columns: 1fr; gap: .6rem; }
+}
 
 @media (max-width: 992px) {
     .summary-grid { grid-template-columns: repeat(2, 1fr); }

@@ -7,14 +7,14 @@ $format = strtolower($_GET['format'] ?? 'csv');
 $row = $id > 0 ? Db::getAnalysis($id) : null;
 if (!$row) {
     http_response_code(404);
-    echo 'Analiz bulunamadı.';
+    echo 'Analysis not found.';
     exit;
 }
 
 $result = json_decode($row['result_json'] ?? '', true);
 if (!is_array($result)) {
     http_response_code(500);
-    echo 'Analiz verisi okunamadı.';
+    echo 'Could not read analysis data.';
     exit;
 }
 
@@ -87,8 +87,8 @@ if ($format === 'html') {
             <header class="page-head">
                 <h1><i class="bi bi-file-earmark-bar-graph text-primary"></i> Nessus Compare Report #<?= $id ?></h1>
                 <p class="text-secondary">
-                    <strong>Kaynak:</strong> <?= h($row['source']) ?> ·
-                    <strong>Oluşturma:</strong> <?= h($when) ?>
+                    <strong>Source:</strong> <?= h($row['source']) ?> ·
+                    <strong>Generated:</strong> <?= h($when) ?>
                 </p>
             </header>
             <?php render_report($result, $first, $last); ?>
@@ -100,4 +100,4 @@ if ($format === 'html') {
 }
 
 http_response_code(400);
-echo 'Geçersiz format. csv veya html kullanın.';
+echo 'Invalid format. Use csv or html.';

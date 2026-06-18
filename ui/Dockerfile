@@ -1,7 +1,11 @@
 FROM php:8.3-apache
 
-# pdo_mysql for the analysis-history persistence (SimpleXML/DOM are bundled).
-RUN docker-php-ext-install pdo_mysql \
+# pdo_mysql for persistence; zip to extract downloaded .nessus scan results
+# (SimpleXML/DOM are bundled).
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends libzip-dev \
+    && rm -rf /var/lib/apt/lists/* \
+    && docker-php-ext-install pdo_mysql zip \
     && a2enmod headers
 
 # Larger upload limits — .nessus exports can be several MB.

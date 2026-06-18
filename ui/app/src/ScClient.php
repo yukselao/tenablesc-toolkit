@@ -52,7 +52,7 @@ class ScClient
         $err  = curl_error($ch);
         curl_close($ch);
         if ($resp === false) {
-            throw new RuntimeException("Security Center'a bağlanılamadı: $err");
+            throw new RuntimeException("Could not connect to Security Center: $err");
         }
         return [$code, $resp];
     }
@@ -77,7 +77,7 @@ class ScClient
     {
         [$code, $resp] = $this->request('GET', '/rest/currentUser');
         if ($code !== 200) {
-            throw new RuntimeException("Kimlik doğrulama başarısız (HTTP $code). URL ve API anahtarlarını kontrol edin.");
+            throw new RuntimeException("Authentication failed (HTTP $code). Check the URL and API keys.");
         }
         $j = json_decode($resp, true);
         return $j['response']['username'] ?? 'unknown';
@@ -99,7 +99,7 @@ class ScClient
         $query = '/rest/scanResult?startTime=0&endTime=9999999999&fields=' . $fields;
         [$code, $resp] = $this->request('GET', $query);
         if ($code !== 200) {
-            throw new RuntimeException("Scan result listesi alınamadı (HTTP $code)." .
+            throw new RuntimeException("Could not list scan results (HTTP $code)." .
                 (($d = self::scError($resp)) !== '' ? " SC: $d" : ''));
         }
         $j = json_decode($resp, true);
@@ -123,23 +123,68 @@ class ScClient
         return $out;
     }
 
+    /**
+     * Download a scan result and return its .nessus XML. The endpoint returns a
+     * ZIP archive containing one .nessus file. Parsing this (same engine as the
+     * file-upload mode) is the only way to read the open ports a Host Discovery
+     * scan records in `enumerated-ports-*` HostProperties tags — listvuln does
+     * not expose them.
+     */
+    public function downloadNessus(int $id): string
+    {
+        [$code, $resp] = $this->request('POST', "/rest/scanResult/$id/download", '{"downloadType":"v2"}');
+        if ($code !== 200) {
+            throw new RuntimeException("Could not download scan result #$id (HTTP $code)."
+                . (($d = self::scError($resp)) !== '' ? " SC: $d" : ''));
+        }
+        // Some configurations return the raw .nessus directly.
+        if (str_contains(substr($resp, 0, 256), '<NessusClientData_v2')) {
+            return $resp;
+        }
+
+        $tmp = tempnam(sys_get_temp_dir(), 'scz');
+        file_put_contents($tmp, $resp);
+        $za = new ZipArchive();
+        if ($za->open($tmp) !== true) {
+            unlink($tmp);
+            throw new RuntimeException("Scan result #$id downloaded but the ZIP could not be opened.");
+        }
+        $xml = null;
+        for ($i = 0; $i < $za->numFiles; $i++) {
+            $name = $za->getNameIndex($i);
+            if (str_ends_with(strtolower($name), '.nessus')) {
+                $xml = $za->getFromIndex($i);
+                break;
+            }
+        }
+        if ($xml === null && $za->numFiles > 0) {
+            $xml = $za->getFromIndex(0);
+        }
+        $za->close();
+        unlink($tmp);
+        if ($xml === false || $xml === null) {
+            throw new RuntimeException("No .nessus file found inside the scan result #$id archive.");
+        }
+        return $xml;
+    }
+
     /** Build a helpful message for a failed individual-analysis query. */
     private static function analysisError(int $scanId, int $code, string $resp, $errCode): string
     {
         $detail = self::scError($resp);
-        $base = "Scan #$scanId bulguları alınamadı (HTTP $code)";
+        $base = "Could not fetch findings for scan #$scanId (HTTP $code)";
 
         // error_code 143 = "Unable to process Vuln Query": the scan result has no
         // queryable *individual* data (partial/expired/zero-host scan), NOT a permission issue.
         if ((string) $errCode === '143' || str_contains($detail, 'Unable to process Vuln Query')) {
-            return "$base. Bu scan result için bireysel (individual) bulgu verisi sorgulanamıyor — "
-                 . "büyük ihtimalle tarama yarım kalmış (Partial), veri içermiyor (0 host) ya da "
-                 . "individual veri dizini süresi dolmuş. Lütfen **Completed** ve veri içeren bir "
-                 . "scan result seçin." . ($detail !== '' ? " [SC: $detail]" : '');
+            return "$base. This scan result has no queryable individual findings data — "
+                 . "the scan was most likely Partial, contained no data (0 hosts), or its "
+                 . "individual data directory has expired. Please pick a Completed scan result "
+                 . "that contains data." . ($detail !== '' ? " [SC: $detail]" : '');
         }
         if ($code === 403) {
-            return "$base. API kullanıcısı bu scan result'ı analiz etme yetkisine sahip olmayabilir "
-                 . "(farklı kullanıcı/organizasyon ya da yetersiz rol)."
+            return "$base. The API user may not be allowed to analyze this scan result "
+                 . "(different user/organization or insufficient role)."
                  . ($detail !== '' ? " [SC: $detail]" : '');
         }
         return "$base." . ($detail !== '' ? " SC: $detail" : '');

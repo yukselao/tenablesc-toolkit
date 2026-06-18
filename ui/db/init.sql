@@ -18,8 +18,25 @@ CREATE TABLE IF NOT EXISTS analyses (
     INDEX idx_created (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Security Center connection settings (key/value).
+-- Security Center connection settings + cache meta (key/value).
 CREATE TABLE IF NOT EXISTS settings (
     k VARCHAR(64) PRIMARY KEY,
     v TEXT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Local cache of SC scan results (filled by "Fetch All Scan Results").
+CREATE TABLE IF NOT EXISTS sc_scan_results (
+    id          INT PRIMARY KEY,
+    name        VARCHAR(512) NOT NULL,
+    status      VARCHAR(32),
+    result_type VARCHAR(32),
+    finish_time BIGINT NOT NULL DEFAULT 0,
+    start_time  BIGINT NOT NULL DEFAULT 0,
+    scanned_ips VARCHAR(32),
+    repository  VARCHAR(255),
+    can_use     TINYINT(1) NOT NULL DEFAULT 1,
+    owner       VARCHAR(255),
+    synced_at   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_name (name(191)),
+    INDEX idx_finish (finish_time)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

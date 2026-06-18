@@ -27,13 +27,24 @@ Açık portlar her `ReportHost` içinde iki kaynaktan çıkarılır:
 - **db** — `mariadb:11`, analiz geçmişi (`analyses`) + SC ayarları (`settings`)
 - Port: **http://localhost:8091/**
 
-## Security Center bağlantısı
+## Security Center bağlantısı & akış
 
-`Compare Scan Results` çalışmadan önce **Settings**'ten SC bilgileri girilir.
-Akış: `GET /rest/scanResult` ile scan result listesi → seçilen First/Last için
-`POST /rest/analysis` (`tool=listvuln`, `sourceType=individual`, `scanID`) sayfalı çekilir →
-her satırdaki `ip`/`port`/`protocol` host→port haritasına dönüştürülür → aynı karşılaştırma
-motoruyla (NessusParser::compare) 3 tablo üretilir.
+`Compare Scan Results` çalışmadan önce **Settings**'ten SC bilgileri girilir. Akış:
+
+1. **Fetch All Scan Results** düğmesi → `GET /rest/scanResult` (geniş zaman penceresiyle
+   tüm sonuçlar) bir kez çekilir ve `sc_scan_results` tablosuna **cache**'lenir. Cache bar
+   son çekilme tarihini ve sonuç sayısını gösterir. Liste her açılışta SC'yi sorgulamaz —
+   binlerce taramada sayfa kasmaz.
+2. Liste **isme göre gruplanır**, **sayfalı** (25 grup/sayfa) ve **aramalı** sunulur.
+   Her grup, o isimdeki **ilk** (en eski) ve **son** (en yeni) taramayı gösterir.
+3. Bir grupta **First ↔ Last** düğmesi → o iki scan result için `POST /rest/analysis`
+   (`tool=listvuln`, `sourceType=individual`, sayfalı) çekilir → `ip`/`port`/`protocol`
+   host→port haritasına dönüşür → `NessusParser::compare` ile 3 tablo üretilir.
+4. **Customize** → grup açılır (talep üzerine AJAX), tüm taramalar First/Last radyolarıyla
+   listelenir; kullanıcı default ilk/son yerine istediği iki taramayı seçip karşılaştırır.
+
+Sidebar bölümlüdür: **Nessus File** (Compare Nessus Scans) ve **Tenable Security Center**
+(Compare Scan Results, Settings). Arayüz dili İngilizce (`lang="en"`).
 
 > **Docker Desktop notu:** SC bu makinede/loopback IP'sinde (ör. `192.168.1.62`) çalışıyorsa
 > container o IP'ye ulaşamaz. SC URL'sini `https://host.docker.internal:8443` olarak girin.

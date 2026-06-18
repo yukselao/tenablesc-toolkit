@@ -26,7 +26,7 @@ function render_head(string $title): void
 {
     ?>
 <!doctype html>
-<html lang="tr" data-bs-theme="dark">
+<html lang="en" data-bs-theme="dark">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -45,10 +45,14 @@ function render_head(string $title): void
  */
 function render_sidebar(string $active, array $history = []): void
 {
-    $items = [
-        'nessus'   => ['index.php',           'bi-arrow-left-right', 'Compare Nessus Scans'],
-        'results'  => ['compare_results.php', 'bi-cloud-download',   'Compare Scan Results'],
-        'settings' => ['settings.php',        'bi-gear',             'Security Center Settings'],
+    $sections = [
+        'Nessus File' => [
+            'nessus' => ['index.php', 'bi-arrow-left-right', 'Compare Nessus Scans'],
+        ],
+        'Tenable Security Center' => [
+            'results'  => ['compare_results.php', 'bi-cloud-download', 'Compare Scan Results'],
+            'settings' => ['settings.php',        'bi-gear',           'Security Center Settings'],
+        ],
     ];
     ?>
     <aside class="sidebar">
@@ -60,16 +64,19 @@ function render_sidebar(string $active, array $history = []): void
             </div>
         </div>
         <nav class="nav flex-column px-2">
-            <?php foreach ($items as $key => [$href, $icon, $label]): ?>
-                <a class="nav-link <?= $active === $key ? 'active' : '' ?>" href="<?= $href ?>">
-                    <i class="bi <?= $icon ?>"></i> <?= h($label) ?>
-                </a>
+            <?php foreach ($sections as $section => $items): ?>
+                <div class="nav-section-title"><?= h($section) ?></div>
+                <?php foreach ($items as $key => [$href, $icon, $label]): ?>
+                    <a class="nav-link <?= $active === $key ? 'active' : '' ?>" href="<?= $href ?>">
+                        <i class="bi <?= $icon ?>"></i> <?= h($label) ?>
+                    </a>
+                <?php endforeach; ?>
             <?php endforeach; ?>
         </nav>
 
         <?php if ($history): ?>
         <div class="sidebar-section">
-            <div class="sidebar-heading">Son Analizler</div>
+            <div class="sidebar-heading">Recent Analyses</div>
             <ul class="history">
                 <?php foreach ($history as $hrow): ?>
                     <li>
@@ -168,7 +175,7 @@ function render_report(array $result, string $firstLabel, string $lastLabel): vo
                 <thead><tr><th>#</th><th>Host</th><th>Operating System</th><th>MAC</th><th>Open Ports</th></tr></thead>
                 <tbody>
                 <?php if (empty($result['new_hosts'])): ?>
-                    <tr><td colspan="5" class="empty-row">İlk taramada olmayıp son taramada görünen host yok.</td></tr>
+                    <tr><td colspan="5" class="empty-row">No hosts that appear in the last scan but not the first.</td></tr>
                 <?php else: $i = 1; foreach ($result['new_hosts'] as $r): ?>
                     <tr>
                         <td class="text-muted"><?= $i++ ?></td>
@@ -191,10 +198,10 @@ function render_report(array $result, string $firstLabel, string $lastLabel): vo
         </div>
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
-                <thead><tr><th>#</th><th>Host</th><th>Operating System</th><th>New Ports</th><th>Port Sayısı</th></tr></thead>
+                <thead><tr><th>#</th><th>Host</th><th>Operating System</th><th>New Ports</th><th>Port Count</th></tr></thead>
                 <tbody>
                 <?php if (empty($result['new_ports'])): ?>
-                    <tr><td colspan="5" class="empty-row">Mevcut host'larda son taramada yeni açılan port yok.</td></tr>
+                    <tr><td colspan="5" class="empty-row">No newly opened ports on hosts present in both scans.</td></tr>
                 <?php else: $i = 1; foreach ($result['new_ports'] as $r): ?>
                     <tr>
                         <td class="text-muted"><?= $i++ ?></td>
@@ -217,10 +224,10 @@ function render_report(array $result, string $firstLabel, string $lastLabel): vo
         </div>
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
-                <thead><tr><th>#</th><th>Host</th><th>Operating System</th><th>MAC</th><th>Önceki Portlar</th></tr></thead>
+                <thead><tr><th>#</th><th>Host</th><th>Operating System</th><th>MAC</th><th>Previous Ports</th></tr></thead>
                 <tbody>
                 <?php if (empty($result['unreachable'])): ?>
-                    <tr><td colspan="5" class="empty-row">İlk taramada olup son taramada kaybolan host yok.</td></tr>
+                    <tr><td colspan="5" class="empty-row">No hosts that appear in the first scan but not the last.</td></tr>
                 <?php else: $i = 1; foreach ($result['unreachable'] as $r): ?>
                     <tr>
                         <td class="text-muted"><?= $i++ ?></td>
