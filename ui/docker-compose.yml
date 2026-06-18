@@ -1,0 +1,39 @@
+services:
+  web:
+    build: .
+    image: nessus-compare-web
+    container_name: nessus-compare-web
+    restart: unless-stopped
+    ports:
+      - "8091:80"
+    volumes:
+      - ./app:/var/www/html
+    environment:
+      DB_HOST: db
+      DB_NAME: nessus_compare
+      DB_USER: nessus
+      DB_PASS: nessus
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: mariadb:11
+    container_name: nessus-compare-db
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: rootpw
+      MARIADB_DATABASE: nessus_compare
+      MARIADB_USER: nessus
+      MARIADB_PASSWORD: nessus
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  db_data:
